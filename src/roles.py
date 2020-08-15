@@ -12,7 +12,7 @@ def fetch_iam_roles(path_prefix: str = "/", max_items: int = 200) -> List[dict]:
     """
     client = fetch_boto3_client("iam")
 
-    res = client.list_roles(PathPrefix=path_prefix, MaxItems=max_items,)
+    res = client.list_roles(PathPrefix=path_prefix, MaxItems=max_items)
     return [
         {
             "arn": r["Arn"],
