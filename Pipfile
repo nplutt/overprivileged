@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+overprivileged = {editable = true,path = "."}
+black = "==19.10b0"
+pytest-cov = "*"
+isort = "*"
+bandit = "*"
+mypy = "*"
+
+[packages]
+boto3 = "*"
+click = "*"
+
+[requires]
+python_version = "3.6"
