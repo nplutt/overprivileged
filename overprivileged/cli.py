@@ -2,9 +2,9 @@ import json
 
 import click
 
-from src.cloudwatch import fetch_role_iam_actions
-from src.exceptions import ClickException
-from src.roles import fetch_iam_roles
+from overprivileged.exceptions import ClickException
+from overprivileged.iam.role import fetch_role_actions, fetch_roles
+from overprivileged.iam.policy import fetch_role_policies
 
 
 @click.group()
@@ -21,13 +21,13 @@ def cli(region):
 )
 @click.option("--max-items", help="The max number of roles to return", default=200)
 def list_roles(path_prefix: str, max_items: int) -> None:
-    roles = fetch_iam_roles(path_prefix, max_items)
+    roles = fetch_roles(path_prefix, max_items)
     click.echo(json.dumps(roles, sort_keys=True, indent=4))
 
 
 @cli.command("check-privileges")
 @click.option(
-    "--role-arn", help="The ARN of the role for who's privileges should be checked.",
+    "--role-name", help="The name of the role for who's privileges should be checked.",
 )
 @click.option(
     "--log-group-name",
@@ -39,9 +39,10 @@ def list_roles(path_prefix: str, max_items: int) -> None:
     "checked against.",
     default=14,
 )
-def check_privileges(role_arn: str, log_group_name: str, days: int) -> None:
-    actions = fetch_role_iam_actions(role_arn, log_group_name, days)
-    click.echo(json.dumps(actions, sort_keys=True, indent=4))
+def check_privileges(role_name: str, log_group_name: str, days: int) -> None:
+    # actions = fetch_role_actions(role_name, log_group_name, days)
+    policies = fetch_role_policies(role_name)
+    click.echo(json.dumps(policies, sort_keys=True, indent=4))
 
 
 def main() -> None:
