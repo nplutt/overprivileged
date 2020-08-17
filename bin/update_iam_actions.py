@@ -14,6 +14,6 @@ if __name__ == "__main__":
         service = service_map[service_name]
         iam_actions[service["StringPrefix"]] = service["Actions"]
 
-    actions_file = open("./src/iam/actions.py", "w")
+    actions_file = open("./src/static/iam_actions.py", "w")
     actions_file.write(f"actions = {json.dumps(iam_actions, indent=4)}")
     actions_file.close()

@@ -1,18 +1,19 @@
 import boto3
+import click
 from botocore.config import Config
 
 
 client_cache = {}
 
 
-def fetch_boto3_client(service_name: str, region_name: str = None):
+def fetch_boto3_client(service_name: str):
     """
     Takes a service name & region and returns a boto3 client for
     the given service.
     """
-    if not region_name:
-        region_name = _load_current_region_name()
-
+    region_name = (
+        click.get_current_context().params.get("region") or _load_current_region_name()
+    )
     cache_key = f"{region_name}-{service_name}"
 
     if client_cache.get(cache_key):

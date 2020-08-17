@@ -1,10 +1,19 @@
+from typing import List
+
 from overprivileged.clients import fetch_boto3_client
 
 
-def fetch_role_policies(role_name: str) -> dict:
-    """
+def fetch_role_policy_actions(role_name: str) -> List[str]:
+    policies = fetch_role_policies(role_name)
 
-    """
+    actions = set()
+    for policy in policies.values():
+        actions.update(fetch_actions_from_policy(policy))
+
+    return list(actions)
+
+
+def fetch_role_policies(role_name: str) -> dict:
     inline_policies = fetch_role_inline_policies(role_name)
     attached_policies = fetch_role_attached_policies(role_name)
     return {**inline_policies, **attached_policies}
@@ -43,3 +52,11 @@ def fetch_policy_version(policy_arn: str) -> str:
     client = fetch_boto3_client("iam")
     policy = client.get_policy(PolicyArn=policy_arn)
     return policy["Policy"]["DefaultVersionId"]
+
+
+def fetch_actions_from_policy(policy: dict) -> List[str]:
+    actions = set()
+    for block in policy["Statement"]:
+        actions.update(block["Action"])
+
+    return list(actions)

@@ -2,6 +2,7 @@ from typing import List
 
 from overprivileged.clients import fetch_boto3_client
 from overprivileged.cloudwatch import run_query
+from overprivileged.iam.action import create_action
 
 
 def fetch_roles(path_prefix: str = "/", max_items: int = 200) -> List[dict]:
@@ -39,4 +40,6 @@ def fetch_role_actions(role_name: str, log_group_name: str, days: int):
     | count_distinct(concat(source, '-', name, '-', region)) as distinct_count 
         by source, name, region
     """
-    return run_query(query, log_group_name, days)
+    results = run_query(query, log_group_name, days)
+    actions = [create_action(r["source"], r["name"]) for r in results]
+    return actions
