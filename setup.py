@@ -3,13 +3,13 @@ from setuptools import find_packages, setup
 
 setup(
     name="overprivileged",
-    version="0.1.0",
+    version="0.0.1",
     description="CLI for discovering overprivileged AWS IAM roles",
     author="Nick Plutt",
     author_email="nplutt@gmail.com",
     license="MIT",
     url="https://github.com/nplutt/overprivileged",
-    project_urls={"Source Code": "https://github.com/nplutt/overprivileged/",},
+    project_urls={"Source Code": "https://github.com/nplutt/overprivileged/"},
     keywords="overprivileged aws iam cloudtrail roles python",
     classifiers=[
         "Intended Audience :: Developers",
@@ -26,6 +26,6 @@ setup(
     install_requires=["boto3", "click"],
     extras_require={
         "test": ["pytest", "pytest-cov"],
-        "dev": ["black", "isort", "bandit", "mypy", "requests"],
+        "dev": ["black", "isort", "requests"],
     },
 )

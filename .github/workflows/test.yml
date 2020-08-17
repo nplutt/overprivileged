@@ -7,19 +7,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Python Setup
-      uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.6
+        python-version: '3.6'
     - name: Install Dependencies
       run: |
-        pip3 install pipenv
-        pipenv install --dev
-    - name: Lint
-      run: |
-        pipenv run black overprivileged/ tests/ --check
-        pipenv run isort . -c
-    - name: Run Tests
-      run: |
-        pipenv run pytest tests/
+        python -m pip install --upgrade pip
+        pip install ".[test, dev]"
+    - name: Run tests
+      uses: ./.github/actions/test
+      with:
+        codecov-token: ${{ secrets.CODECOV_TOKEN }}
