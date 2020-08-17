@@ -1,2 +1,0 @@
-class ClickException(Exception):
-    pass
