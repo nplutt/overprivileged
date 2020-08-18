@@ -15,7 +15,9 @@ def create_action(source: str, name: str) -> str:
     return f"{prefix}:{name}"
 
 
-def load_all_possible_actions_from_action(action) -> List[str]:
+def load_all_possible_actions_from_action(action: str) -> List[str]:
+    action = action.replace("*", ".*")
+
     parts = action.split(":")
     prefix = parts[0]
     action = "".join(parts[1:])

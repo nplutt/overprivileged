@@ -63,7 +63,7 @@ def fetch_query_results(query_id: str, timeout: datetime) -> List[dict]:
 
     results = None
     while datetime.utcnow() < timeout:
-        sleep(5)
+        sleep(2.5)
         results = client.get_query_results(queryId=query_id)
         if results["status"] in [
             QueryStatus.COMPLETE.value,

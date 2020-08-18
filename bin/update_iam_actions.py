@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 
 import requests
 
@@ -9,11 +10,14 @@ if __name__ == "__main__":
     )
     service_map = res.json()["serviceMap"]
 
-    iam_actions = {}
+    iam_actions = defaultdict(set)
     for service_name in service_map:
         service = service_map[service_name]
-        iam_actions[service["StringPrefix"]] = service["Actions"]
+        iam_actions[service["StringPrefix"]].update(service["Actions"])
 
-    actions_file = open("./src/static/iam_actions.py", "w")
+    for k, v in iam_actions.items():
+        iam_actions[k] = sorted(list(v))
+
+    actions_file = open("./overprivileged/static/iam_actions.py", "w")
     actions_file.write(f"actions = {json.dumps(iam_actions, indent=4)}")
     actions_file.close()

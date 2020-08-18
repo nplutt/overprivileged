@@ -16,7 +16,7 @@ def fetch_roles(path_prefix: str = "/", max_items: int = 200) -> List[dict]:
 
     res = client.list_roles(PathPrefix=path_prefix, MaxItems=max_items)
     return [
-        {"name": r.get("RoleName"), "description": r.get("Description"),}
+        {"name": r.get("RoleName"), "description": r.get("Description")}
         for r in res["Roles"]
     ]
 
@@ -42,4 +42,4 @@ def fetch_role_actions(role_name: str, log_group_name: str, days: int):
     """
     results = run_query(query, log_group_name, days)
     actions = [create_action(r["source"], r["name"]) for r in results]
-    return actions
+    return sorted(actions)

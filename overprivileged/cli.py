@@ -2,7 +2,10 @@ import json
 
 import click
 
-from overprivileged.iam.policy import fetch_role_policy_actions
+from overprivileged.iam.policy import (
+    fetch_explicit_role_policy_actions,
+    fetch_role_policy_actions,
+)
 from overprivileged.iam.role import fetch_role_actions, fetch_roles
 
 
@@ -11,7 +14,7 @@ def cli():
     pass
 
 
-@cli.command("list-roles", help="List IAM role names for the current AWS account")
+@cli.command("list-roles", help="List all IAM roles")
 @click.option(
     "--path-prefix",
     help="Filter IAM roles based off of a given path prefix",
@@ -33,19 +36,17 @@ def list_roles(path_prefix: str, max_items: int) -> None:
     "list-role-actions", help="List all IAM actions that can be performed by a role"
 )
 @click.option(
-    "--role-name",
-    help="The name of the role for who's actions should be listed",
-    type=click.STRING,
+    "--role-name", help="The name of the role to list actions for.", type=click.STRING,
 )
 def list_role_actions(role_name: str) -> None:
-    actions = fetch_role_policy_actions(role_name)
-    click.echo(json.dumps(actions, sort_keys=True, indent=4))
+    explicit_actions = fetch_explicit_role_policy_actions(role_name)
+    click.echo(json.dumps(explicit_actions, sort_keys=True, indent=4))
 
 
 @cli.command("check-privileges")
 @click.option(
     "--role-name",
-    help="The name of the role for who's privileges should be checked.",
+    help="The name of the role to check privileges for.",
     type=click.STRING,
 )
 @click.option(
@@ -69,11 +70,18 @@ def list_role_actions(role_name: str) -> None:
 def check_privileges(
     role_name: str, log_group_name: str, days: int, region: str = None
 ) -> None:
-    actions = fetch_role_actions(role_name, log_group_name, days)
-    click.echo(json.dumps(actions, sort_keys=True, indent=4))
+    used_actions = fetch_role_actions(role_name, log_group_name, days)
+    explicit_actions = fetch_explicit_role_policy_actions(role_name)
+    unused_actions = sorted(list(set(explicit_actions).difference(set(used_actions))))
 
-    actions = fetch_role_policy_actions(role_name)
-    click.echo(json.dumps(actions, sort_keys=True, indent=4))
+    click.secho(
+        f"Used actions: {json.dumps(used_actions, sort_keys=True, indent=4)}",
+        fg="green",
+    )
+    click.secho(
+        f"Unused actions: {json.dumps(unused_actions, sort_keys=True, indent=4)}",
+        fg="red",
+    )
 
 
 def main() -> None:

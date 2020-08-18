@@ -1,6 +1,7 @@
 from typing import List
 
 from overprivileged.clients import fetch_boto3_client
+from overprivileged.iam.action import load_all_possible_actions_from_action
 
 
 def fetch_role_policy_actions(role_name: str) -> List[str]:
@@ -10,7 +11,17 @@ def fetch_role_policy_actions(role_name: str) -> List[str]:
     for policy in policies.values():
         actions.update(fetch_actions_from_policy(policy))
 
-    return list(actions)
+    return sorted(list(actions))
+
+
+def fetch_explicit_role_policy_actions(role_name: str) -> List[str]:
+    actions = fetch_role_policy_actions(role_name)
+
+    explicit_actions = set()
+    for action in actions:
+        explicit_actions.update(load_all_possible_actions_from_action(action))
+
+    return sorted(list(explicit_actions))
 
 
 def fetch_role_policies(role_name: str) -> dict:
