@@ -21,7 +21,7 @@ def fetch_roles(path_prefix: str = "/", max_items: int = 200) -> List[dict]:
     ]
 
 
-def fetch_role_actions(role_name: str, log_group_name: str, days: int):
+def fetch_role_actions(role_name: str, log_group_name: str, days: int) -> dict:
     """
     Fetches all of the actions performed by an IAM role from a cloudtrail
     log group in cloudwatch.
@@ -40,6 +40,9 @@ def fetch_role_actions(role_name: str, log_group_name: str, days: int):
     | count_distinct(concat(source, '-', name, '-', region)) as distinct_count 
         by source, name, region
     """
-    results = run_query(query, log_group_name, days)
-    actions = [create_action(r["source"], r["name"]) for r in results]
-    return sorted(actions)
+    results, query_cost = run_query(query, log_group_name, days)
+    actions = sorted([create_action(r["source"], r["name"]) for r in results])
+    return {
+        "query_cost": query_cost,
+        "actions": actions,
+    }
