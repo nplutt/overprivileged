@@ -22,7 +22,12 @@ setup(
     python_requires=">=3.6",
     packages=find_packages(exclude=("tests",)),
     include_package_data=True,
-    entry_points={"console_scripts": ["op = overprivileged.cli:main"]},
+    entry_points={
+        "console_scripts": [
+            "op = overprivileged.cli:main",
+            "overprivileged =  overprivileged.cli:main",
+        ],
+    },
     install_requires=["boto3", "click"],
     extras_require={
         "test": ["pytest", "pytest-cov"],

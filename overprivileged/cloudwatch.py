@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+from decimal import Decimal, getcontext
 from enum import Enum
 from time import mktime, sleep, time
-from typing import List
+from typing import List, Tuple
 
 from overprivileged.clients import fetch_boto3_client
 
@@ -13,7 +14,7 @@ class QueryStatus(Enum):
 
 def run_query(
     query: str, log_group_name: str, days: int, timeout_min: int = 5
-) -> List[dict]:
+) -> Tuple[List[dict], Decimal]:
     """
     Runs a query against a given log group name via Cloudwatch insights
     Args:
@@ -24,8 +25,7 @@ def run_query(
     """
     timeout = datetime.utcnow() + timedelta(minutes=timeout_min)
     query_id = start_query(query, log_group_name, days)
-    results = fetch_query_results(query_id, timeout)
-    return results
+    return fetch_query_results(query_id, timeout)
 
 
 def start_query(query: str, log_group_name: str, days: int) -> str:
@@ -51,7 +51,7 @@ def start_query(query: str, log_group_name: str, days: int) -> str:
     return query_response["queryId"]
 
 
-def fetch_query_results(query_id: str, timeout: datetime) -> List[dict]:
+def fetch_query_results(query_id: str, timeout: datetime) -> Tuple[List[dict], Decimal]:
     """
     Waits for and returns the results from a given cloudwatch insights
     query
@@ -63,7 +63,7 @@ def fetch_query_results(query_id: str, timeout: datetime) -> List[dict]:
 
     results = None
     while datetime.utcnow() < timeout:
-        sleep(5)
+        sleep(2)
         results = client.get_query_results(queryId=query_id)
         if results["status"] in [
             QueryStatus.COMPLETE.value,
@@ -71,4 +71,20 @@ def fetch_query_results(query_id: str, timeout: datetime) -> List[dict]:
         ]:
             break
 
-    return [{r["field"]: r["value"] for r in records} for records in results["results"]]
+    query_price = calculate_query_price(results["statistics"]["bytesScanned"])
+    results = [
+        {r["field"]: r["value"] for r in records} for records in results["results"]
+    ]
+    return results, query_price
+
+
+def calculate_query_price(bytes_scanned: int) -> Decimal:
+    """
+    Takes the number of bytes scanned during a query and returns the price
+    AWS will charge for running the query
+    Args:
+         bytes_scanned: number of bytes scanned during the query
+    """
+    getcontext().prec = 2
+    gigabytes_scanned = Decimal(bytes_scanned) * Decimal(0.000000001)
+    return gigabytes_scanned * Decimal(0.005)
