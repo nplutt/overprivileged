@@ -2,7 +2,7 @@ import json
 
 import click
 
-from overprivileged.iam.policy import fetch_explicit_role_policy_actions
+from overprivileged.iam.policy import fetch_explicit_policy_actions_for_role
 from overprivileged.iam.role import fetch_role_actions, fetch_roles
 
 
@@ -36,13 +36,13 @@ def list_roles(path_prefix: str, max_items: int) -> None:
     "--role-name", help="The name of the role to list actions for.", type=click.STRING,
 )
 def list_role_actions(role_name: str) -> None:
-    explicit_actions = fetch_explicit_role_policy_actions(role_name)
+    explicit_actions = fetch_explicit_policy_actions_for_role(role_name)
     click.echo(json.dumps(explicit_actions, sort_keys=True, indent=4))
 
 
 @cli.command(
     "check-privileges",
-    help="Checks what IAM actions are used and unused for a given IAM role",
+    help="Checks what actions are used and unused by a role",
 )
 @click.option(
     "--role-name",
@@ -71,7 +71,7 @@ def check_privileges(
     role_name: str, log_group_name: str, days: int, region: str = None
 ) -> None:
     used_actions = fetch_role_actions(role_name, log_group_name, days)
-    explicit_actions = fetch_explicit_role_policy_actions(role_name)
+    explicit_actions = fetch_explicit_policy_actions_for_role(role_name)
     unused_actions = sorted(
         list(set(explicit_actions).difference(set(used_actions["actions"])))
     )
@@ -79,7 +79,6 @@ def check_privileges(
     click.secho(
         json.dumps(
             {
-                "queryPrice": f"${used_actions['query_cost']}",
                 "usedActions": used_actions["actions"],
                 "unusedActions": unused_actions,
             },
